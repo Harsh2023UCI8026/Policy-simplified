@@ -376,7 +376,7 @@ export default function PoliciesView({
                         }`}>
                           <div className="flex items-start gap-1.5">
                             {isOptimal && <Check className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />}
-                            <span>{row.values[p.id as keyof typeof row.values] || '-'}</span>
+                            <span>{row.keyField === 'settlement' ? `${p.claimSettlementRatio}%` : (row.values[p.id as keyof typeof row.values] || '-')}</span>
                           </div>
                         </div>
                       </td>
