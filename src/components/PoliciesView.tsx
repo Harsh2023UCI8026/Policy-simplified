@@ -803,7 +803,7 @@ export default function PoliciesView({
                   </div>
                   <div className="flex justify-between p-2.5 border-b border-slate-150 dark:border-slate-800">
                     <span className="text-slate-400">Claim Settlement Ratio:</span>
-                    <span className="font-bold text-slate-900 dark:text-white">{selectedDetailPolicy.claimSettlementRatio}</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{selectedDetailPolicy.claimSettlementRatio}%</span>
                   </div>
                   <div className="flex justify-between p-2.5 border-b border-slate-150 dark:border-slate-800">
                     <span className="text-slate-400">Network Hospitals:</span>

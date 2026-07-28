@@ -19,11 +19,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 15,
     waitingPeriodStatus: 'Pending Completion',
     trustScore: 78,
-    claimSettlementRatio: '92%',
+    claimSettlementRatio: 92,
     customerReviews: 4.2,
     complaintsLevel: 'Low',
     financialStability: 'A+',
-    transparency: '85%',
+    transparency: 85,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -118,11 +118,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 30,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 85,
-    claimSettlementRatio: '96%',
+    claimSettlementRatio: 96,
     customerReviews: 4.5,
     complaintsLevel: 'Low',
     financialStability: 'AAA',
-    transparency: '90%',
+    transparency: 90,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -192,11 +192,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 45,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 72,
-    claimSettlementRatio: '91.4%',
+    claimSettlementRatio: 91.4,
     customerReviews: 4.1,
     complaintsLevel: 'Moderate',
     financialStability: 'AA',
-    transparency: '82%',
+    transparency: 82,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -266,11 +266,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 30,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 79,
-    claimSettlementRatio: '89.9%',
+    claimSettlementRatio: 89.9,
     customerReviews: 4.0,
     complaintsLevel: 'Moderate',
     financialStability: 'AA-',
-    transparency: '80%',
+    transparency: 80,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -320,11 +320,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 30,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 82,
-    claimSettlementRatio: '92.6%',
+    claimSettlementRatio: 92.6,
     customerReviews: 4.1,
     complaintsLevel: 'Low',
     financialStability: 'AA',
-    transparency: '86%',
+    transparency: 86,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -373,11 +373,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 15,
     waitingPeriodStatus: 'Pending',
     trustScore: 88,
-    claimSettlementRatio: '94.2%',
+    claimSettlementRatio: 94.2,
     customerReviews: 4.4,
     complaintsLevel: 'Low',
     financialStability: 'AAA',
-    transparency: '89%',
+    transparency: 89,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -425,11 +425,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 45,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 74,
-    claimSettlementRatio: '91.2%',
+    claimSettlementRatio: 91.2,
     customerReviews: 3.9,
     complaintsLevel: 'Moderate',
     financialStability: 'A',
-    transparency: '79%',
+    transparency: 79,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -478,11 +478,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 30,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 81,
-    claimSettlementRatio: '92.2%',
+    claimSettlementRatio: 92.2,
     customerReviews: 4.1,
     complaintsLevel: 'Low',
     financialStability: 'AA+',
-    transparency: '82%',
+    transparency: 82,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
