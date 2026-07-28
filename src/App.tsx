@@ -14,6 +14,8 @@ import ReportsView from './components/ReportsView';
 import WelcomeModal from './components/WelcomeModal';
 import { Policy } from './types';
 import { POLICIES } from './data';
+import { normalizePolicies } from './utils/normalizeData';
+const NORMALIZED_POLICIES = normalizePolicies(POLICIES);
 
 export default function App() {
   // Navigation active tab page selector
@@ -33,7 +35,7 @@ export default function App() {
   const [welcomeOpen, setWelcomeOpen] = useState<boolean>(true);
 
   // Global selected policy for dynamic updates of the whole suite
-  const [selectedPolicy, setSelectedPolicy] = useState<Policy>(POLICIES[0]);
+  const [selectedPolicy, setSelectedPolicy] = useState<Policy>(NORMALIZED_POLICIES[0]);
 
   // Handle stylesheet class attachment for dark mode
   useEffect(() => {
