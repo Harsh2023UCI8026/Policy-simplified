@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
+  <!-- Blue shield background -->
+  <path fill="#2563EB" d="M12 2l8 3v6c0 6-8 11-8 11S4 17 4 11V5l8-3z"/>
+  <!-- White check mark -->
+  <path fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/>
+</svg>

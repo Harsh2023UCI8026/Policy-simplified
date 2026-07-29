@@ -40,3 +40,43 @@ body {
   background-color: #090D16;
   color: #F8FAFC;
 }
+
+/* Global select / option theming for dark mode
+   Ensures native <select> dropdowns use readable text/background in dark theme.
+   Centralized here so individual components don't need per-page fixes. */
+select {
+  /* Use inherited text color by default so it follows theme */
+  color: inherit;
+  background-color: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select option {
+  color: inherit;
+  background-color: transparent;
+}
+
+/* Dark mode: explicitly ensure readable background/text for select and options */
+.dark select {
+  background-color: rgba(17, 24, 39, 0.95); /* roughly slate-900 */
+  color: #F8FAFC; /* match body dark text */
+  border-color: rgba(51, 65, 85, 1); /* slate-700-ish */
+}
+
+.dark select option {
+  background-color: rgba(17, 24, 39, 0.95);
+  color: #F8FAFC;
+}
+
+/* Focus / hover accessibility */
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* For browsers that use system dropdowns, try to force readable text */
+select::-ms-expand { display: none; }
+
+
