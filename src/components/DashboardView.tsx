@@ -106,15 +106,15 @@ export default function DashboardView({
                 const found = POLICIES.find(p => p.id === e.target.value);
                 if (found) setSelectedPolicy(found);
               }}
-              className="appearance-none font-medium text-xs rounded-xl border border-slate-250 bg-white pl-4 pr-10 py-2.5 text-slate-850 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-905 dark:text-slate-100"
+              className="appearance-none font-medium text-xs rounded-xl border border-slate-200 bg-white dark:bg-slate-800 pl-4 pr-10 py-2.5 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
               {POLICIES.map((p) => (
-                <option key={p.id} value={p.id}>
+                <option key={p.id} value={p.id} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                   {p.name}
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-450 pointer-events-none" />
+            <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-450 dark:text-slate-400 pointer-events-none" />
           </div>
         </div>
       </div>
