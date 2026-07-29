@@ -8,18 +8,19 @@ export interface Clause {
   description: string;
   status: 'Standard' | 'Restrictive' | 'Premium' | 'Notice';
   extendedInfo?: string;
-  // optional severity score (0-10) to help ranking clauses in UI
-  severityScore?: number;
+  // severity score (0-10) to help ranking clauses in UI; filled by factory if missing
+  severityScore: number; 
 }
 
 export interface Benefit {
   // Optional id helps tracking benefits programmatically
   id?: string;
   title: string;
-  value: string;
+  // Allow number or string for flexibility (e.g. '100%' or 100)
+  value: string | number;
   description: string;
-  // optional coverage percent (0..100)
-  coveragePercent?: number;
+  // Coverage percent (0..100). Factory will populate if a percent-like value exists in `value`.
+  coverage?: number;
 }
 
 export interface Mismatch {
@@ -69,7 +70,7 @@ export interface Policy {
   mismatches: Mismatch[];
   
   // Optional metadata for production use
-  lastUpdated?: string; // ISO date string, e.g. 2026-06-14T12:00:00Z
+  lastUpdated?: Date;
   verified?: boolean;
   dataSource?: 'Manual' | 'API' | 'Document';
 }

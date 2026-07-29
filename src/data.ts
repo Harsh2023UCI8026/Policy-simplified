@@ -40,13 +40,51 @@ export function createPolicy(data: any): Policy {
     ? parsePercentString(data.transparency)
     : 0;
 
+  // Normalize clauses severityScore
+  const clauses = (data.criticalClauses || []).map((c: any) => ({
+    ...c,
+    severityScore: typeof c.severityScore === 'number' ? c.severityScore : 5,
+  }));
+
+  // Normalize benefits: try to derive coverage percentage from `value` if it's a percent string
+  const benefits = { ...(data.benefits || {}) };
+  for (const k of Object.keys(benefits)) {
+    const b = benefits[k];
+    if (b) {
+      // If value is percent-like, parse it to coverage
+      if (typeof b.value === 'string' && /^\s*\d+(?:\.\d+)?%\s*$/.test(b.value)) {
+        try {
+          b.coverage = parsePercentString(b.value);
+        } catch (_) {
+          b.coverage = b.coverage ?? undefined;
+        }
+      }
+      // ensure numeric coverage present if explicitly provided
+      if ('coverage' in b && typeof b.coverage === 'string') {
+        try { b.coverage = parsePercentString(b.coverage); } catch (_) { /* ignore */ }
+      }
+    }
+  }
+
+  // Normalize logoColor: if raw classes present, try to infer base color or fall back to COMPANY_COLORS mapping
+  let logoColor = data.logoColor;
+  if (typeof logoColor === 'string') {
+    // If it's a tailwind class like 'text-blue-600', extract 'blue'
+    const m = /text-([a-z]+)-\d+/.exec(logoColor);
+    if (m) logoColor = m[1];
+    else if (COMPANY_COLORS[data.id]) logoColor = COMPANY_COLORS[data.id];
+  }
+
   return {
     ...data,
     claimSettlementRatio,
     transparency,
-    lastUpdated: data.lastUpdated ?? DEFAULT_POLICY_VALUES.lastUpdated,
+    lastUpdated: data.lastUpdated ? new Date(data.lastUpdated) : new Date(DEFAULT_POLICY_VALUES.lastUpdated),
     verified: data.verified ?? DEFAULT_POLICY_VALUES.verified,
-    dataSource: data.dataSource ?? DEFAULT_POLICY_VALUES.dataSource
+    dataSource: data.dataSource ?? DEFAULT_POLICY_VALUES.dataSource,
+    criticalClauses: clauses,
+    benefits,
+    logoColor
   } as Policy;
 }
 
@@ -565,6 +603,17 @@ const RAW_POLICIES: any[] = [
 ];
 
 export const POLICIES: Policy[] = RAW_POLICIES.map(r => createPolicy({ ...DEFAULT_POLICY_VALUES, ...r }));
+
+// Runtime validator helpers
+export function validatePolicy(p: any): p is Policy {
+  return (
+    typeof p === 'object' && p !== null &&
+    typeof p.healthScore === 'number' && p.healthScore >= 0 && p.healthScore <= 100 &&
+    typeof p.customerReviews === 'number' && p.customerReviews >= 0 && p.customerReviews <= 5 &&
+    typeof p.claimSettlementRatio === 'number' && p.claimSettlementRatio >= 0 && p.claimSettlementRatio <= 100 &&
+    typeof p.transparency === 'number' && p.transparency >= 0 && p.transparency <= 100
+  );
+}
 
 export const REPLAY_REPORTS: ReportItem[] = [
   {
