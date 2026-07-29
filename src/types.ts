@@ -64,7 +64,7 @@ export interface Policy {
     roadAmbulance: Benefit;
     restoration: Benefit;
   };
-  subLimits: string[];
+  subLimits: SubLimit[];
   addOns: string[];
   criticalClauses: Clause[];
   mismatches: Mismatch[];
@@ -97,6 +97,15 @@ export interface ReportItem {
   date: string;
   size: string;
   status: 'Ready' | 'Generating';
+}
+
+export interface SubLimit {
+  key?: string; // machine key like 'roomRent', 'icuCharges', etc.
+  label: string; // human readable label
+  description?: string;
+  capPercent?: number; // 0..100
+  capAmount?: number; // INR
+  unit?: 'perDay' | 'perClaim' | 'perEye' | null;
 }
 
 export interface ChatMessage {

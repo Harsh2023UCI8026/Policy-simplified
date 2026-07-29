@@ -128,6 +128,26 @@ export default function PoliciesView({
     p.company.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Helpers to render structured subLimits (backwards compatible with strings)
+  const getSubLimitLabel = (limit: any) => {
+    if (!limit) return '';
+    if (typeof limit === 'string') return limit;
+    const parts = [limit.label];
+    if (limit.capPercent) parts.push(`${limit.capPercent}%`);
+    if (limit.capAmount) parts.push(`₹${limit.capAmount.toLocaleString('en-IN')}`);
+    if (limit.unit === 'perDay') parts.push('/day');
+    if (limit.unit === 'perClaim') parts.push('/claim');
+    return parts.join(' ');
+  };
+
+  const highlightedSublimits = (selectedDetailPolicy && Array.isArray(selectedDetailPolicy.subLimits))
+    ? selectedDetailPolicy.subLimits.filter((val: any) => {
+      const text = typeof val === 'string' ? val : (val.label + ' ' + (val.description || ''));
+      return /Capped|cap|limit|Rent/i.test(text) || (typeof val === 'object' && (val.capPercent || val.capAmount));
+    })
+    : [];
+
+
   // Highlight key comparison factors
   const COMPARISON_ROWS = [
     {
@@ -829,7 +849,7 @@ export default function PoliciesView({
                   <div className="space-y-2">
                     {[
                       'Excellent default ' + selectedDetailPolicy.benefits.restoration.value + ' Restoration benefits',
-                      selectedDetailPolicy.subLimits[0]?.replace('Room Rent: ', '') || 'No hard capping rules',
+                      (selectedDetailPolicy.subLimits[0] ? getSubLimitLabel(selectedDetailPolicy.subLimits[0]) : 'No hard capping rules'),
                       'No restriction pre-post hospitalization boundaries',
                       'Solvency status level is highly robust'
                     ].slice(0, 3).map((item, index) => (
@@ -845,13 +865,13 @@ export default function PoliciesView({
                 <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-150 dark:border-slate-800">
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Cons & Cautions</h4>
                   <div className="space-y-2">
-                    {selectedDetailPolicy.subLimits.filter(val => val.includes('Capped') || val.includes('limit') || val.includes('Rent: ')).length > 0 ? (
-                      selectedDetailPolicy.subLimits.map((item, index) => (
+                    {highlightedSublimits.length > 0 ? (
+                      highlightedSublimits.slice(0,3).map((item: any, index: number) => (
                         <div key={index} className="flex gap-2 text-xs text-slate-650 dark:text-slate-350">
                           <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                          <span className="font-sans truncate">{item.replace('Room Rent: ', '').replace('ICU Charges: ', '')}</span>
+                          <span className="font-sans truncate">{getSubLimitLabel(item).replace('Room Rent: ', '').replace('ICU Charges: ', '')}</span>
                         </div>
-                      )).slice(0, 3)
+                      ))
                     ) : (
                       <>
                         <div className="flex gap-2 text-xs text-slate-650 dark:text-slate-350">

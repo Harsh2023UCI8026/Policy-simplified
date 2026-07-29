@@ -460,12 +460,18 @@ export default function DashboardView({
 
             {activeSubTab === 'sublimits' && (
               <ul className="space-y-3.5">
-                {selectedPolicy.subLimits.map((limit, idx) => (
-                  <li key={idx} className="flex gap-2.5 items-start text-xs text-slate-700 dark:text-slate-300">
-                    <span className="h-5 w-5 shrink-0 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 font-bold text-[10px]">!</span>
-                    <span>{limit}</span>
-                  </li>
-                ))}
+                {selectedPolicy.subLimits.map((limit, idx) => {
+                  const lbl = typeof limit === 'string' ? limit : (limit.label || JSON.stringify(limit));
+                  const capText = typeof limit === 'object' && (limit.capPercent || limit.capAmount)
+                    ? (limit.capPercent ? `${limit.capPercent}%` : `₹${(limit.capAmount || 0).toLocaleString('en-IN')}`) + (limit.unit === 'perDay' ? ' /day' : limit.unit === 'perClaim' ? ' /claim' : '')
+                    : undefined;
+                  return (
+                    <li key={idx} className="flex gap-2.5 items-start text-xs text-slate-700 dark:text-slate-300">
+                      <span className="h-5 w-5 shrink-0 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 font-bold text-[10px]">!</span>
+                      <span>{lbl}{capText ? ` — ${capText}` : ''}</span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
 

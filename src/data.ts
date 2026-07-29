@@ -5,6 +5,7 @@
 
 import { Policy, ReportItem, ChatMessage } from './types';
 import { parsePercentString } from './utils/parsePercent';
+import { parseSubLimit } from './utils/parseSubLimit';
 
 // Centralized company color mapping for consistent theming
 export const COMPANY_COLORS: Record<string, string> = {
@@ -75,6 +76,10 @@ export function createPolicy(data: any): Policy {
     else if (COMPANY_COLORS[data.id]) logoColor = COMPANY_COLORS[data.id];
   }
 
+  // Normalize subLimits: turn strings into structured SubLimit objects
+  const subLimitsRaw = data.subLimits || [];
+  const normalizedSubLimits = subLimitsRaw.map((s: any) => typeof s === 'string' ? parseSubLimit(s) : s);
+
   return {
     ...data,
     claimSettlementRatio,
@@ -84,7 +89,8 @@ export function createPolicy(data: any): Policy {
     dataSource: data.dataSource ?? DEFAULT_POLICY_VALUES.dataSource,
     criticalClauses: clauses,
     benefits,
-    logoColor
+    logoColor,
+    subLimits: normalizedSubLimits
   } as Policy;
 }
 
