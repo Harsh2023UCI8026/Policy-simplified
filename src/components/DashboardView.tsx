@@ -401,11 +401,11 @@ export default function DashboardView({
           {/* Breakdown blocks */}
           <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-5 gap-4">
             {[
-              { label: 'Claim Settlement', val: selectedPolicy.claimSettlementRatio },
+              { label: 'Claim Settlement', val: `${selectedPolicy.claimSettlementRatio}%` },
               { label: 'Customer Reviews', val: `${selectedPolicy.customerReviews}/5` },
               { label: 'IRDAI Complaints', val: selectedPolicy.complaintsLevel, color: selectedPolicy.complaintsLevel === 'Low' ? 'text-green-600' : 'text-amber-500' },
               { label: 'Financial Stability', val: selectedPolicy.financialStability, color: 'text-indigo-600 dark:text-indigo-400' },
-              { label: 'Transparency', val: selectedPolicy.transparency }
+              { label: 'Transparency', val: `${selectedPolicy.transparency}%` }
             ].map((stat, idx) => (
               <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl text-center border border-slate-150 dark:border-slate-805">
                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -460,12 +460,18 @@ export default function DashboardView({
 
             {activeSubTab === 'sublimits' && (
               <ul className="space-y-3.5">
-                {selectedPolicy.subLimits.map((limit, idx) => (
-                  <li key={idx} className="flex gap-2.5 items-start text-xs text-slate-700 dark:text-slate-300">
-                    <span className="h-5 w-5 shrink-0 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 font-bold text-[10px]">!</span>
-                    <span>{limit}</span>
-                  </li>
-                ))}
+                {selectedPolicy.subLimits.map((limit, idx) => {
+                  const lbl = typeof limit === 'string' ? limit : (limit.label || JSON.stringify(limit));
+                  const capText = typeof limit === 'object' && (limit.capPercent || limit.capAmount)
+                    ? (limit.capPercent ? `${limit.capPercent}%` : `₹${(limit.capAmount || 0).toLocaleString('en-IN')}`) + (limit.unit === 'perDay' ? ' /day' : limit.unit === 'perClaim' ? ' /claim' : '')
+                    : undefined;
+                  return (
+                    <li key={idx} className="flex gap-2.5 items-start text-xs text-slate-700 dark:text-slate-300">
+                      <span className="h-5 w-5 shrink-0 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 font-bold text-[10px]">!</span>
+                      <span>{lbl}{capText ? ` — ${capText}` : ''}</span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
 

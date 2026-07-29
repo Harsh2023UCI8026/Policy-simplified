@@ -128,21 +128,59 @@ export default function PoliciesView({
     p.company.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Helpers to render structured subLimits (backwards compatible with strings)
+  const getSubLimitLabel = (limit: any) => {
+    if (!limit) return '';
+    if (typeof limit === 'string') return limit;
+    const parts = [limit.label];
+    if (limit.capPercent) parts.push(`${limit.capPercent}%`);
+    if (limit.capAmount) parts.push(`₹${limit.capAmount.toLocaleString('en-IN')}`);
+    if (limit.unit === 'perDay') parts.push('/day');
+    if (limit.unit === 'perClaim') parts.push('/claim');
+    return parts.join(' ');
+  };
+
+  const highlightedSublimits = (selectedDetailPolicy && Array.isArray(selectedDetailPolicy.subLimits))
+    ? selectedDetailPolicy.subLimits.filter((val: any) => {
+      const text = typeof val === 'string' ? val : (val.label + ' ' + (val.description || ''));
+      return /Capped|cap|limit|Rent/i.test(text) || (typeof val === 'object' && (val.capPercent || val.capAmount));
+    })
+    : [];
+
+
   // Highlight key comparison factors
+  // Helper: format comparison value (supports legacy strings and structured objects)
+  const getComparisonValue = (row: any, p: any) => {
+    if (row.keyField === 'settlement') return `${p.claimSettlementRatio}%`;
+    const raw = row.values[p.id];
+    if (!raw) return '-';
+    if (typeof raw === 'string') return raw;
+    // structured object
+    const parts: string[] = [];
+    if (raw.label) parts.push(raw.label);
+    if (raw.capPercent !== undefined) parts.push(`${raw.capPercent}%`);
+    if (raw.capAmount !== undefined) parts.push(`₹${raw.capAmount.toLocaleString('en-IN')}`);
+    if (raw.unit === 'perDay') parts.push('/day');
+    if (raw.unit === 'perClaim') parts.push('/claim');
+    if (parts.length === 0) return JSON.stringify(raw);
+    return parts.join(' ');
+  };
+
+  // Highlight key comparison factors (values now mostly structured)
   const COMPARISON_ROWS = [
     {
       feat: 'Room Rent Ceiling Cap',
       keyField: 'roomLimit',
-      betterIds: ['hdfc-optima', 'niva-bupa', 'tata-medicare', 'star-comprehensive', 'reliance-health', 'bajaj-health'], 
+      betterIds: ['hdfc-optima', 'niva-bupa', 'tata-medicare', 'star-comprehensive', 'reliance-health', 'bajaj-health'],
       values: {
-        'hdfc-optima': 'No Sub-limits (Single Private)',
-        'icici-lombard': 'Capped at 1% of Sum Insured daily',
-        'niva-bupa': 'No restrictions under policy guidelines',
-        'star-comprehensive': 'Single standard AC room covered',
-        'care-health': 'Up to ₹5,500 daily limit',
-        'tata-medicare': 'No caps (Single Private AC Suite)',
-        'reliance-health': 'Standard single private AC room',
-        'bajaj-health': 'Single private AC room (capped at 1% daily)'
+        'hdfc-optima': { label: 'No Sub-limits (Single Private)' },
+        'icici-lombard': { label: 'Capped', capPercent: 1, unit: 'perDay' },
+        'niva-bupa': { label: 'No restrictions under policy guidelines' },
+        'star-comprehensive': { label: 'Single standard AC room covered' },
+        'care-health': { label: 'Capped', capAmount: 5500, unit: 'perDay' },
+        'tata-medicare': { label: 'No caps (Single Private AC Suite)' },
+        'reliance-health': { label: 'Standard single private AC room' },
+        'bajaj-health': { label: 'Single private AC room', capPercent: 1, unit: 'perDay' }
       }
     },
     {
@@ -150,14 +188,14 @@ export default function PoliciesView({
       keyField: 'icuLimit',
       betterIds: ['hdfc-optima', 'niva-bupa', 'tata-medicare', 'bajaj-health'],
       values: {
-        'hdfc-optima': 'No restrictions or ceilings',
-        'icici-lombard': 'Capped at 2% of Sum Insured daily',
-        'niva-bupa': 'No limitations (Actual nursing costs)',
-        'star-comprehensive': 'Covered up to 2% sum insured',
-        'care-health': 'Capped at ₹11,000 daily limit',
-        'tata-medicare': 'No Sub-limits',
-        'reliance-health': 'Capped at 2% sum insured daily',
-        'bajaj-health': 'No Sub-limits standard'
+        'hdfc-optima': { label: 'No restrictions or ceilings' },
+        'icici-lombard': { label: 'Capped', capPercent: 2, unit: 'perDay' },
+        'niva-bupa': { label: 'No limitations (Actual nursing costs)' },
+        'star-comprehensive': { label: 'Covered up to', capPercent: 2 },
+        'care-health': { label: 'Capped', capAmount: 11000, unit: 'perDay' },
+        'tata-medicare': { label: 'No Sub-limits' },
+        'reliance-health': { label: 'Capped', capPercent: 2, unit: 'perDay' },
+        'bajaj-health': { label: 'No Sub-limits standard' }
       }
     },
     {
@@ -165,14 +203,14 @@ export default function PoliciesView({
       keyField: 'cataract',
       betterIds: ['icici-lombard', 'tata-medicare'],
       values: {
-        'hdfc-optima': 'Capped at ₹75,000 per eye',
-        'icici-lombard': 'Up to actual surgical bills',
-        'niva-bupa': 'Capped at ₹1,00,000 per claim',
-        'star-comprehensive': 'Up to ₹50,000 per eye limit',
-        'care-health': 'Capped up to ₹60,000 limit',
-        'tata-medicare': 'Up to actual surgical bills',
-        'reliance-health': 'Capped at ₹65,000 per claim',
-        'bajaj-health': 'Capped up to ₹80,000 limit'
+        'hdfc-optima': { label: 'Capped at', capAmount: 75000, unit: 'perEye' },
+        'icici-lombard': { label: 'Up to actual surgical bills' },
+        'niva-bupa': { label: 'Capped at', capAmount: 100000 },
+        'star-comprehensive': { label: 'Up to', capAmount: 50000, unit: 'perEye' },
+        'care-health': { label: 'Capped up to', capAmount: 60000 },
+        'tata-medicare': { label: 'Up to actual surgical bills' },
+        'reliance-health': { label: 'Capped at', capAmount: 65000 },
+        'bajaj-health': { label: 'Capped up to', capAmount: 80000 }
       }
     },
     {
@@ -180,14 +218,14 @@ export default function PoliciesView({
       keyField: 'ayush',
       betterIds: ['hdfc-optima', 'niva-bupa', 'care-health', 'tata-medicare', 'bajaj-health'],
       values: {
-        'hdfc-optima': '100% Covered (All Government Centers)',
-        'icici-lombard': 'Up to 50% max allowance limits',
-        'niva-bupa': 'Fully covered across authorized',
-        'star-comprehensive': 'Covered up to ₹25,000/year limit',
-        'care-health': 'Included up to full Sum Insured',
-        'tata-medicare': 'Covered up to 100% of SI limit',
-        'reliance-health': 'Covered up to 60% of SI standard',
-        'bajaj-health': 'Covered in full standard 100%'
+        'hdfc-optima': { label: 'Covered', capPercent: 100 },
+        'icici-lombard': { label: 'Up to', capPercent: 50 },
+        'niva-bupa': { label: 'Fully covered across authorized' },
+        'star-comprehensive': { label: 'Covered up to', capAmount: 25000, unit: 'perClaim' },
+        'care-health': { label: 'Included up to full Sum Insured' },
+        'tata-medicare': { label: 'Covered up to', capPercent: 100 },
+        'reliance-health': { label: 'Covered up to', capPercent: 60 },
+        'bajaj-health': { label: 'Covered in full', capPercent: 100 }
       }
     },
     {
@@ -195,14 +233,14 @@ export default function PoliciesView({
       keyField: 'airAmbulance',
       betterIds: ['niva-bupa', 'tata-medicare'],
       values: {
-        'hdfc-optima': 'Excluded except in extreme life danger',
-        'icici-lombard': 'Excluded from core health benefits',
-        'niva-bupa': 'Covered up to ₹2,50,000 per instance',
-        'star-comprehensive': 'Up to specified standard limits',
-        'care-health': 'Standard premium limits boundary',
-        'tata-medicare': 'Covered in full standard amount',
-        'reliance-health': 'Capped at ₹3,000 per admission',
-        'bajaj-health': 'Covered actuals within standard bounds'
+        'hdfc-optima': { label: 'Excluded except in extreme life danger' },
+        'icici-lombard': { label: 'Excluded from core health benefits' },
+        'niva-bupa': { label: 'Covered up to', capAmount: 250000 },
+        'star-comprehensive': { label: 'Up to specified standard limits' },
+        'care-health': { label: 'Standard premium limits boundary' },
+        'tata-medicare': { label: 'Covered in full standard amount' },
+        'reliance-health': { label: 'Capped at', capAmount: 3000 },
+        'bajaj-health': { label: 'Covered actuals within standard bounds' }
       }
     },
     {
@@ -210,14 +248,14 @@ export default function PoliciesView({
       keyField: 'settlement',
       betterIds: ['icici-lombard'],
       values: {
-        'hdfc-optima': '92% verified solvency record',
-        'icici-lombard': '96% - Superb premium record log',
-        'niva-bupa': '91.4% standard claim payout',
-        'star-comprehensive': '89.9% claims approved',
-        'care-health': '92.6% solvency track',
-        'tata-medicare': '94.2% verified standard ratio',
-        'reliance-health': '91.2% approved claims standard',
-        'bajaj-health': '92.2% approved ratio standard'
+        'hdfc-optima': { label: 'Verified solvency record', capPercent: 92 },
+        'icici-lombard': { label: 'Superb premium record log', capPercent: 96 },
+        'niva-bupa': { label: 'Standard claim payout', capPercent: 91.4 },
+        'star-comprehensive': { label: 'Claims approved', capPercent: 89.9 },
+        'care-health': { label: 'Solvency track', capPercent: 92.6 },
+        'tata-medicare': { label: 'Verified standard ratio', capPercent: 94.2 },
+        'reliance-health': { label: 'Approved claims standard', capPercent: 91.2 },
+        'bajaj-health': { label: 'Approved ratio standard', capPercent: 92.2 }
       }
     }
   ];
@@ -376,7 +414,7 @@ export default function PoliciesView({
                         }`}>
                           <div className="flex items-start gap-1.5">
                             {isOptimal && <Check className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />}
-                            <span>{row.values[p.id as keyof typeof row.values] || '-'}</span>
+                            <span>{getComparisonValue(row, p)}</span>
                           </div>
                         </div>
                       </td>
@@ -803,7 +841,7 @@ export default function PoliciesView({
                   </div>
                   <div className="flex justify-between p-2.5 border-b border-slate-150 dark:border-slate-800">
                     <span className="text-slate-400">Claim Settlement Ratio:</span>
-                    <span className="font-bold text-slate-900 dark:text-white">{selectedDetailPolicy.claimSettlementRatio}</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{selectedDetailPolicy.claimSettlementRatio}%</span>
                   </div>
                   <div className="flex justify-between p-2.5 border-b border-slate-150 dark:border-slate-800">
                     <span className="text-slate-400">Network Hospitals:</span>
@@ -829,7 +867,7 @@ export default function PoliciesView({
                   <div className="space-y-2">
                     {[
                       'Excellent default ' + selectedDetailPolicy.benefits.restoration.value + ' Restoration benefits',
-                      selectedDetailPolicy.subLimits[0]?.replace('Room Rent: ', '') || 'No hard capping rules',
+                      (selectedDetailPolicy.subLimits[0] ? getSubLimitLabel(selectedDetailPolicy.subLimits[0]) : 'No hard capping rules'),
                       'No restriction pre-post hospitalization boundaries',
                       'Solvency status level is highly robust'
                     ].slice(0, 3).map((item, index) => (
@@ -845,13 +883,13 @@ export default function PoliciesView({
                 <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-150 dark:border-slate-800">
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Cons & Cautions</h4>
                   <div className="space-y-2">
-                    {selectedDetailPolicy.subLimits.filter(val => val.includes('Capped') || val.includes('limit') || val.includes('Rent: ')).length > 0 ? (
-                      selectedDetailPolicy.subLimits.map((item, index) => (
+                    {highlightedSublimits.length > 0 ? (
+                      highlightedSublimits.slice(0,3).map((item: any, index: number) => (
                         <div key={index} className="flex gap-2 text-xs text-slate-650 dark:text-slate-350">
                           <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                          <span className="font-sans truncate">{item.replace('Room Rent: ', '').replace('ICU Charges: ', '')}</span>
+                          <span className="font-sans truncate">{getSubLimitLabel(item).replace('Room Rent: ', '').replace('ICU Charges: ', '')}</span>
                         </div>
-                      )).slice(0, 3)
+                      ))
                     ) : (
                       <>
                         <div className="flex gap-2 text-xs text-slate-650 dark:text-slate-350">

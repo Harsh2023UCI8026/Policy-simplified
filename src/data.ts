@@ -4,8 +4,98 @@
  */
 
 import { Policy, ReportItem, ChatMessage } from './types';
+import { parsePercentString } from './utils/parsePercent';
+import { parseSubLimit } from './utils/parseSubLimit';
 
-export const POLICIES: Policy[] = [
+// Centralized company color mapping for consistent theming
+export const COMPANY_COLORS: Record<string, string> = {
+  'hdfc-optima': 'blue',
+  'icici-lombard': 'indigo',
+  'niva-bupa': 'green',
+  'star-comprehensive': 'red-650',
+  'care-health': 'teal',
+  'tata-medicare': 'amber',
+  'reliance-health': 'cyan',
+  'bajaj-health': 'orange'
+};
+
+// Default policy metadata values applied when fields are missing
+export const DEFAULT_POLICY_VALUES = {
+  lastUpdated: new Date().toISOString(),
+  verified: false,
+  dataSource: 'Manual' as const
+};
+
+// Factory function that validates and normalizes policy payloads
+export function createPolicy(data: any): Policy {
+  // Validate healthScore
+  if (typeof data.healthScore !== 'number' || data.healthScore < 0 || data.healthScore > 100) {
+    throw new Error('Invalid health score for policy ' + (data.id || '<unknown>'));
+  }
+
+  // Normalize percent-like fields using parsePercentString to accept either number or "NN%" string
+  const claimSettlementRatio = ('claimSettlementRatio' in data)
+    ? parsePercentString(data.claimSettlementRatio)
+    : 0;
+  const transparency = ('transparency' in data)
+    ? parsePercentString(data.transparency)
+    : 0;
+
+  // Normalize clauses severityScore
+  const clauses = (data.criticalClauses || []).map((c: any) => ({
+    ...c,
+    severityScore: typeof c.severityScore === 'number' ? c.severityScore : 5,
+  }));
+
+  // Normalize benefits: try to derive coverage percentage from `value` if it's a percent string
+  const benefits = { ...(data.benefits || {}) };
+  for (const k of Object.keys(benefits)) {
+    const b = benefits[k];
+    if (b) {
+      // If value is percent-like, parse it to coverage
+      if (typeof b.value === 'string' && /^\s*\d+(?:\.\d+)?%\s*$/.test(b.value)) {
+        try {
+          b.coverage = parsePercentString(b.value);
+        } catch (_) {
+          b.coverage = b.coverage ?? undefined;
+        }
+      }
+      // ensure numeric coverage present if explicitly provided
+      if ('coverage' in b && typeof b.coverage === 'string') {
+        try { b.coverage = parsePercentString(b.coverage); } catch (_) { /* ignore */ }
+      }
+    }
+  }
+
+  // Normalize logoColor: if raw classes present, try to infer base color or fall back to COMPANY_COLORS mapping
+  let logoColor = data.logoColor;
+  if (typeof logoColor === 'string') {
+    // If it's a tailwind class like 'text-blue-600', extract 'blue'
+    const m = /text-([a-z]+)-\d+/.exec(logoColor);
+    if (m) logoColor = m[1];
+    else if (COMPANY_COLORS[data.id]) logoColor = COMPANY_COLORS[data.id];
+  }
+
+  // Normalize subLimits: turn strings into structured SubLimit objects
+  const subLimitsRaw = data.subLimits || [];
+  const normalizedSubLimits = subLimitsRaw.map((s: any) => typeof s === 'string' ? parseSubLimit(s) : s);
+
+  return {
+    ...data,
+    claimSettlementRatio,
+    transparency,
+    lastUpdated: data.lastUpdated ? new Date(data.lastUpdated) : new Date(DEFAULT_POLICY_VALUES.lastUpdated),
+    verified: data.verified ?? DEFAULT_POLICY_VALUES.verified,
+    dataSource: data.dataSource ?? DEFAULT_POLICY_VALUES.dataSource,
+    criticalClauses: clauses,
+    benefits,
+    logoColor,
+    subLimits: normalizedSubLimits
+  } as Policy;
+}
+
+
+const RAW_POLICIES: any[] = [
   {
     id: 'hdfc-optima',
     code: 'POL-88293-XP',
@@ -19,11 +109,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 15,
     waitingPeriodStatus: 'Pending Completion',
     trustScore: 78,
-    claimSettlementRatio: '92%',
+    claimSettlementRatio: 92,
     customerReviews: 4.2,
     complaintsLevel: 'Low',
     financialStability: 'A+',
-    transparency: '85%',
+    transparency: 85,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -118,11 +208,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 30,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 85,
-    claimSettlementRatio: '96%',
+    claimSettlementRatio: 96,
     customerReviews: 4.5,
     complaintsLevel: 'Low',
     financialStability: 'AAA',
-    transparency: '90%',
+    transparency: 90,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -192,11 +282,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 45,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 72,
-    claimSettlementRatio: '91.4%',
+    claimSettlementRatio: 91.4,
     customerReviews: 4.1,
     complaintsLevel: 'Moderate',
     financialStability: 'AA',
-    transparency: '82%',
+    transparency: 82,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -266,11 +356,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 30,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 79,
-    claimSettlementRatio: '89.9%',
+    claimSettlementRatio: 89.9,
     customerReviews: 4.0,
     complaintsLevel: 'Moderate',
     financialStability: 'AA-',
-    transparency: '80%',
+    transparency: 80,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -320,11 +410,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 30,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 82,
-    claimSettlementRatio: '92.6%',
+    claimSettlementRatio: 92.6,
     customerReviews: 4.1,
     complaintsLevel: 'Low',
     financialStability: 'AA',
-    transparency: '86%',
+    transparency: 86,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -373,11 +463,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 15,
     waitingPeriodStatus: 'Pending',
     trustScore: 88,
-    claimSettlementRatio: '94.2%',
+    claimSettlementRatio: 94.2,
     customerReviews: 4.4,
     complaintsLevel: 'Low',
     financialStability: 'AAA',
-    transparency: '89%',
+    transparency: 89,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -425,11 +515,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 45,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 74,
-    claimSettlementRatio: '91.2%',
+    claimSettlementRatio: 91.2,
     customerReviews: 3.9,
     complaintsLevel: 'Moderate',
     financialStability: 'A',
-    transparency: '79%',
+    transparency: 79,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -478,11 +568,11 @@ export const POLICIES: Policy[] = [
     waitingPeriodDays: 30,
     waitingPeriodStatus: 'Active Waiting',
     trustScore: 81,
-    claimSettlementRatio: '92.2%',
+    claimSettlementRatio: 92.2,
     customerReviews: 4.1,
     complaintsLevel: 'Low',
     financialStability: 'AA+',
-    transparency: '82%',
+    transparency: 82,
     benefits: {
       ayush: {
         title: 'AYUSH Treatment',
@@ -517,6 +607,19 @@ export const POLICIES: Policy[] = [
     mismatches: []
   }
 ];
+
+export const POLICIES: Policy[] = RAW_POLICIES.map(r => createPolicy({ ...DEFAULT_POLICY_VALUES, ...r }));
+
+// Runtime validator helpers
+export function validatePolicy(p: any): p is Policy {
+  return (
+    typeof p === 'object' && p !== null &&
+    typeof p.healthScore === 'number' && p.healthScore >= 0 && p.healthScore <= 100 &&
+    typeof p.customerReviews === 'number' && p.customerReviews >= 0 && p.customerReviews <= 5 &&
+    typeof p.claimSettlementRatio === 'number' && p.claimSettlementRatio >= 0 && p.claimSettlementRatio <= 100 &&
+    typeof p.transparency === 'number' && p.transparency >= 0 && p.transparency <= 100
+  );
+}
 
 export const REPLAY_REPORTS: ReportItem[] = [
   {

@@ -22,6 +22,13 @@ export default function Header({
   onOpenTour,
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [notificationsOpen, setNotificationsOpen] = React.useState(false);
+
+  // Read user info from localStorage (demo mode). In real app, replace with auth user data
+  const storedName = typeof window !== 'undefined' ? (localStorage.getItem('user_name') || 'Amit Jain') : 'Amit Jain';
+  const initials = storedName.split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
+
 
   const navItems = [
     { id: 'landing', label: 'Welcome' },
@@ -104,13 +111,47 @@ export default function Header({
           </button>
 
           {/* User Profile Avatar block */}
-          <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 font-semibold text-white ring-2 ring-blue-105/10 dark:ring-blue-900/40 text-sm">
-              JD
-            </div>
-            <span className="hidden lg:inline text-xs font-medium text-slate-500 dark:text-slate-400">
-              amitjain...
-            </span>
+          <div className="relative flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-3">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              aria-haspopup="true"
+              aria-expanded={menuOpen}
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 font-semibold text-white text-sm">
+                {initials}
+              </div>
+              <span title={storedName} className="hidden lg:inline text-xs font-medium text-slate-600 dark:text-slate-300 truncate max-w-[8rem]">
+                {storedName}
+              </span>
+            </button>
+
+            {/* Dropdown menu */}
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 rounded-md bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-lg p-2 z-50">
+                <button className="w-full text-left px-3 py-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => { alert('Open profile (demo)'); setMenuOpen(false); }}>
+                  Profile
+                </button>
+                <button className="w-full text-left px-3 py-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => { setNotificationsOpen(!notificationsOpen); }}>
+                  Notifications
+                </button>
+                <hr className="my-1" />
+                <button className="w-full text-left px-3 py-2 rounded text-red-600 hover:bg-red-50" onClick={() => { localStorage.removeItem('user_name'); window.location.reload(); }}>
+                  Logout
+                </button>
+              </div>
+            )}
+
+            {/* Simple notifications popover */}
+            {notificationsOpen && (
+              <div className="absolute right-12 top-full mt-2 w-64 rounded-md bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-lg p-3 z-50">
+                <div className="text-xs text-slate-500 mb-2">Notifications</div>
+                <div className="text-sm text-slate-700 dark:text-slate-200">No new notifications</div>
+                <div className="mt-2 text-right">
+                  <button className="text-xs text-blue-600" onClick={() => setNotificationsOpen(false)}>Close</button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile Hamburguer Toggle */}

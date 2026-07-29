@@ -8,12 +8,27 @@ export interface Clause {
   description: string;
   status: 'Standard' | 'Restrictive' | 'Premium' | 'Notice';
   extendedInfo?: string;
+  // severity score (0-10) to help ranking clauses in UI; filled by factory if missing
+  severityScore: number; 
 }
 
 export interface Benefit {
+  // Optional id helps tracking benefits programmatically
+  id?: string;
   title: string;
-  value: string;
+  // Allow number or string for flexibility (e.g. '100%' or 100)
+  value: string | number;
   description: string;
+  // Coverage percent (0..100). Factory will populate if a percent-like value exists in `value`.
+  coverage?: number;
+}
+
+export interface Mismatch {
+  type: 'critical' | 'alert' | 'info';
+  title: string;
+  description: string;
+  // Optional suggested remediation or action for the mismatch
+  suggestedAction?: string;
 }
 
 export interface Policy {
@@ -29,11 +44,19 @@ export interface Policy {
   waitingPeriodDays: number;
   waitingPeriodStatus: string;
   trustScore: number;
-  claimSettlementRatio: string; // e.g. 92%
+  /**
+   * claimSettlementRatio stored as a NUMBER representing percent (0..100).
+   * Example: 92 means "92%". Keep data numeric; append '%' in the UI.
+   */
+  claimSettlementRatio: number; // e.g. 92 -> displayed as "92%"
   customerReviews: number; // e.g. 4.2
   complaintsLevel: 'Low' | 'Moderate' | 'High';
   financialStability: string; // e.g. A+
-  transparency: string; // e.g. 85%
+  /**
+   * transparency stored as a NUMBER representing percent (0..100).
+   * Example: 85 means "85%" transparency.
+   */
+  transparency: number; // e.g. 85 -> displayed as "85%"
   
   benefits: {
     ayush: Benefit;
@@ -41,14 +64,15 @@ export interface Policy {
     roadAmbulance: Benefit;
     restoration: Benefit;
   };
-  subLimits: string[];
+  subLimits: SubLimit[];
   addOns: string[];
   criticalClauses: Clause[];
-  mismatches: Array<{
-    type: 'critical' | 'alert' | 'info';
-    title: string;
-    description: string;
-  }>;
+  mismatches: Mismatch[];
+  
+  // Optional metadata for production use
+  lastUpdated?: Date;
+  verified?: boolean;
+  dataSource?: 'Manual' | 'API' | 'Document';
 }
 
 export interface Scenario {
@@ -75,14 +99,25 @@ export interface ReportItem {
   status: 'Ready' | 'Generating';
 }
 
+export interface SubLimit {
+  key?: string; // machine key like 'roomRent', 'icuCharges', etc.
+  label: string; // human readable label
+  description?: string;
+  capPercent?: number; // 0..100
+  capAmount?: number; // INR
+  unit?: 'perDay' | 'perClaim' | 'perEye' | null;
+}
+
 export interface ChatMessage {
   id: string;
-  sender: 'user' | 'assistant';
+  // Added 'system' for automated system messages (not user or assistant)
+  sender: 'user' | 'assistant' | 'system';
   text: string;
   timestamp: string;
   meta?: {
     topic?: string;
     clauseId?: string;
-    scenarioMoney?: string;
+    // Store monetary amounts as numbers for easy calculations (INR)
+    scenarioMoney?: number;
   };
 }

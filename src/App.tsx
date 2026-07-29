@@ -14,6 +14,8 @@ import ReportsView from './components/ReportsView';
 import WelcomeModal from './components/WelcomeModal';
 import { Policy } from './types';
 import { POLICIES } from './data';
+import { normalizePolicies } from './utils/normalizeData';
+const NORMALIZED_POLICIES = normalizePolicies(POLICIES);
 
 export default function App() {
   // Navigation active tab page selector
@@ -29,11 +31,16 @@ export default function App() {
     return false;
   });
 
-  // Welcome tour overlay modal open state (Onboarding Page 10)
-  const [welcomeOpen, setWelcomeOpen] = useState<boolean>(true);
+  // Welcome tour overlay modal open state (only on first visit)
+  const [welcomeOpen, setWelcomeOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return !localStorage.getItem('user_visited');
+  });
+
+  const [error, setError] = useState<string | null>(null);
 
   // Global selected policy for dynamic updates of the whole suite
-  const [selectedPolicy, setSelectedPolicy] = useState<Policy>(POLICIES[0]);
+  const [selectedPolicy, setSelectedPolicy] = useState<Policy>(NORMALIZED_POLICIES[0]);
 
   // Handle stylesheet class attachment for dark mode
   useEffect(() => {
@@ -45,6 +52,22 @@ export default function App() {
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
+
+  // Global error listener to capture unexpected errors and display friendly UI
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Global error captured', event.error || event.message);
+      setError(event.message || String(event.error));
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  // Close welcome and mark visited
+  const handleCloseWelcome = () => {
+    setWelcomeOpen(false);
+    try { localStorage.setItem('user_visited', 'true'); } catch (_) { }
+  };
 
   // Smooth routing transition helpers
   const handleGoToDashboard = () => {
@@ -61,9 +84,9 @@ export default function App() {
       {/* Onboarding Welcome Tour Overlay Modal (Screenshot Page 10) */}
       <WelcomeModal 
         isOpen={welcomeOpen}
-        onClose={() => setWelcomeOpen(false)}
+        onClose={handleCloseWelcome}
         onStartTour={() => {
-          setWelcomeOpen(false);
+          handleCloseWelcome();
           setActiveTab('dashboard'); // Route directly to active dashboard
         }}
       />
@@ -125,30 +148,10 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <button 
-              onClick={() => alert("Loading Terms of Service guidelines...")}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
-            >
-              Terms of Service
-            </button>
-            <button 
-              onClick={() => alert("Loading Privacy Policy files...")}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
-            >
-              Privacy Policy
-            </button>
-            <button 
-              onClick={() => alert("Loading Security Audit certifications logs...")}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
-            >
-              Security Compliance
-            </button>
-            <button 
-              onClick={() => alert("Opening Developer portal and integration documentation...")}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
-            >
-              API Docs
-            </button>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400 transition">Terms of Service</a>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400 transition">Privacy Policy</a>
+            <a href="/security" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400 transition">Security Compliance</a>
+            <a href="/docs" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400 transition">API Docs</a>
           </div>
 
         </div>
