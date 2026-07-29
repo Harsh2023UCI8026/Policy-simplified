@@ -4,8 +4,54 @@
  */
 
 import { Policy, ReportItem, ChatMessage } from './types';
+import { parsePercentString } from './utils/parsePercent';
 
-export const POLICIES: Policy[] = [
+// Centralized company color mapping for consistent theming
+export const COMPANY_COLORS: Record<string, string> = {
+  'hdfc-optima': 'blue',
+  'icici-lombard': 'indigo',
+  'niva-bupa': 'green',
+  'star-comprehensive': 'red-650',
+  'care-health': 'teal',
+  'tata-medicare': 'amber',
+  'reliance-health': 'cyan',
+  'bajaj-health': 'orange'
+};
+
+// Default policy metadata values applied when fields are missing
+export const DEFAULT_POLICY_VALUES = {
+  lastUpdated: new Date().toISOString(),
+  verified: false,
+  dataSource: 'Manual' as const
+};
+
+// Factory function that validates and normalizes policy payloads
+export function createPolicy(data: any): Policy {
+  // Validate healthScore
+  if (typeof data.healthScore !== 'number' || data.healthScore < 0 || data.healthScore > 100) {
+    throw new Error('Invalid health score for policy ' + (data.id || '<unknown>'));
+  }
+
+  // Normalize percent-like fields using parsePercentString to accept either number or "NN%" string
+  const claimSettlementRatio = ('claimSettlementRatio' in data)
+    ? parsePercentString(data.claimSettlementRatio)
+    : 0;
+  const transparency = ('transparency' in data)
+    ? parsePercentString(data.transparency)
+    : 0;
+
+  return {
+    ...data,
+    claimSettlementRatio,
+    transparency,
+    lastUpdated: data.lastUpdated ?? DEFAULT_POLICY_VALUES.lastUpdated,
+    verified: data.verified ?? DEFAULT_POLICY_VALUES.verified,
+    dataSource: data.dataSource ?? DEFAULT_POLICY_VALUES.dataSource
+  } as Policy;
+}
+
+
+const RAW_POLICIES: any[] = [
   {
     id: 'hdfc-optima',
     code: 'POL-88293-XP',
@@ -517,6 +563,8 @@ export const POLICIES: Policy[] = [
     mismatches: []
   }
 ];
+
+export const POLICIES: Policy[] = RAW_POLICIES.map(r => createPolicy({ ...DEFAULT_POLICY_VALUES, ...r }));
 
 export const REPLAY_REPORTS: ReportItem[] = [
   {
