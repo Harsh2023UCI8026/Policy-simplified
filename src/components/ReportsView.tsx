@@ -19,6 +19,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { ReportItem } from '../types';
+import ThemeSelect from './ThemeSelect';
 import { REPLAY_REPORTS } from '../data';
 
 export default function ReportsView() {
@@ -77,16 +78,16 @@ export default function ReportsView() {
                 Select Policy
               </label>
               <div className="relative">
-                <select
+                <ThemeSelect
                   id="select-policy-dropdown"
                   value={selectedP}
-                  onChange={(e) => setSelectedP(e.target.value)}
+                  onChange={(e) => setSelectedP((e.target as HTMLSelectElement).value)}
                   className="w-full appearance-none rounded-xl border border-slate-250 bg-white py-2.5 pl-4 pr-10 text-xs font-semibold text-slate-800 dark:border-slate-850 dark:bg-slate-905 dark:text-slate-100"
                 >
                   <option value="hdfc-optima">Corporate Term Life v.2 (Active)</option>
                   <option value="icici-lombard">ICICI Lombard Health Shield</option>
                   <option value="niva-bupa">Niva Bupa ReAssure</option>
-                </select>
+                </ThemeSelect>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
@@ -96,16 +97,16 @@ export default function ReportsView() {
                 Report Type
               </label>
               <div className="relative">
-                <select
+                <ThemeSelect
                   id="report-type-dropdown"
                   value={selectedRepType}
-                  onChange={(e) => setSelectedRepType(e.target.value)}
+                  onChange={(e) => setSelectedRepType((e.target as HTMLSelectElement).value)}
                   className="w-full appearance-none rounded-xl border border-slate-250 bg-white py-2.5 pl-4 pr-10 text-xs font-semibold text-slate-800 dark:border-slate-850 dark:bg-slate-905 dark:text-slate-100"
                 >
                   <option value="Risk Assessment Analysis">Risk Assessment Analysis</option>
                   <option value="Clause Coverage Breakdown">Clause Coverage Breakdown</option>
                   <option value="Regulatory Compliance Checklist">Regulatory Compliance Checklist</option>
-                </select>
+                </ThemeSelect>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
             </div>

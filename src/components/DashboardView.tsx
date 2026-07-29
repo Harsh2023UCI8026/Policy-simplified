@@ -23,6 +23,7 @@ import {
   Info
 } from 'lucide-react';
 import { Policy, Clause } from '../types';
+import ThemeSelect from './ThemeSelect';
 import { POLICIES, HEATMAP_CLAUSES } from '../data';
 
 interface DashboardViewProps {
@@ -99,11 +100,11 @@ export default function DashboardView({
             Selected Policy:
           </label>
           <div className="relative">
-            <select
+            <ThemeSelect
               id="policy-selector"
               value={selectedPolicy.id}
               onChange={(e) => {
-                const found = POLICIES.find(p => p.id === e.target.value);
+                const found = POLICIES.find(p => p.id === (e.target as HTMLSelectElement).value);
                 if (found) setSelectedPolicy(found);
               }}
               className="appearance-none font-medium text-xs rounded-xl border border-slate-200 bg-white dark:bg-slate-800 pl-4 pr-10 py-2.5 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -113,7 +114,7 @@ export default function DashboardView({
                   {p.name}
                 </option>
               ))}
-            </select>
+            </ThemeSelect>
             <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-450 dark:text-slate-400 pointer-events-none" />
           </div>
         </div>
