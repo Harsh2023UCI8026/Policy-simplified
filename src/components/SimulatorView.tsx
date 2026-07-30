@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import ThemeSelect from './ThemeSelect';
 import { 
   Compass, 
   HelpCircle, 
@@ -143,15 +144,15 @@ export default function SimulatorView() {
                 Claim Type
               </label>
               <div className="relative">
-                <select
+                <ThemeSelect
                   id="claim-type"
                   value={claimType}
-                  onChange={(e) => setClaimType(e.target.value as 'Motor' | 'Health')}
+                  onChange={(e) => setClaimType((e.target as HTMLSelectElement).value as 'Motor' | 'Health')}
                   className="w-full appearance-none rounded-xl border border-slate-250 bg-white py-3 pl-4 pr-10 text-xs font-semibold text-slate-800 dark:border-slate-850 dark:bg-slate-905 dark:text-slate-100"
                 >
                   <option value="Motor">Motor Coverage</option>
                   <option value="Health">Health / Medical Coverage</option>
-                </select>
+                </ThemeSelect>
                 <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-450 pointer-events-none" />
               </div>
             </div>
@@ -162,10 +163,10 @@ export default function SimulatorView() {
                 Incident Type
               </label>
               <div className="relative">
-                <select
+                <ThemeSelect
                   id="incident-type"
                   value={incidentType}
-                  onChange={(e) => setIncidentType(e.target.value)}
+                  onChange={(e) => setIncidentType((e.target as HTMLSelectElement).value)}
                   className="w-full appearance-none rounded-xl border border-slate-250 bg-white py-3 pl-4 pr-10 text-xs font-semibold text-slate-800 dark:border-slate-850 dark:bg-slate-905 dark:text-slate-100"
                 >
                   {claimType === 'Motor' ? (
@@ -183,7 +184,7 @@ export default function SimulatorView() {
                       <option value="Daycare Cataract">Bilateral Cataract Treatment</option>
                     </>
                   )}
-                </select>
+                </ThemeSelect>
                 <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-450 pointer-events-none" />
               </div>
             </div>
