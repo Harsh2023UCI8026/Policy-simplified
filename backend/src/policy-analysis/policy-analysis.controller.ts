@@ -8,6 +8,7 @@ export class PolicyAnalysisController {
 
   @Post('policy')
   async analyze(@Body() dto: AnalyzePolicyDto) {
-    return this.policyAnalysisService.analyzePolicy(dto.policyId);
+    const result = this.policyAnalysisService.analyzePolicy(dto.policyId);
+    return result;
   }
 }
